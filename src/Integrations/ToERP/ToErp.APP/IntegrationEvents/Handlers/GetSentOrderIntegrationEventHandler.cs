@@ -34,7 +34,7 @@ namespace ToErp.APP.IntegrationEvents.Handlers
             {
                 try
                 {
-                    _erpIntegration.ChangeShipmentStatus<OrderStatus>(order.OrderID.ToString(),OrderStatus.Gönderildi);
+                    _erpIntegration.ChangeShipmentStatus<Order,OrderStatus>(order,OrderStatus.Gönderildi);
 
                    // _eventBus.Publish(new ChangeOrderStatusIntegrationEvent(order, OrderStatus.GönderildiAktarildi));
                 }

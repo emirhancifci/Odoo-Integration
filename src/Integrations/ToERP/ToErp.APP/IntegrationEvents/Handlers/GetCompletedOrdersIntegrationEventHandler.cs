@@ -35,10 +35,10 @@ namespace ToErp.APP.IntegrationEvents.Handlers
             {
                 try
                 {
-                    _erpIntegration.ChangeOrderStatus<OdooOrderStatus>(order.OrderID.ToString(), OdooOrderStatus.done);
-                    _erpIntegration.ChangeShipmentStatus<OrderStatus>(order.OrderID.ToString(), OrderStatus.Tamamlandi);
+                    _erpIntegration.ChangeOrderStatus<Order,OdooOrderStatus>(order, OdooOrderStatus.done);
+                    _erpIntegration.ChangeShipmentStatus<Order,OrderStatus>(order, OrderStatus.Tamamlandi);
 
-                    _eventBus.Publish(new ChangeOrderStatusIntegrationEvent(order, OrderStatus.TamamlandiAktarildi));
+                 //   _eventBus.Publish(new ChangeOrderStatusIntegrationEvent(order, OrderStatus.TamamlandiAktarildi));
                     
                     _logger.LogInformation($"{order.OrderID} Odoo'ya aktarıldı :");
                 }

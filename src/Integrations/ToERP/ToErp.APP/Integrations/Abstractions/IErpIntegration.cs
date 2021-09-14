@@ -12,9 +12,9 @@ namespace ToErp.APP.Integrations.Abstractions
 
         public T GetOrderFromErp<T>(string orderId) where T : class;
 
-        void ChangeOrderStatus<TStatus>(string orderId, TStatus status);
+        void ChangeOrderStatus<TModel,TStatus>(TModel order, TStatus status);
 
-        void ChangeShipmentStatus<TStatus>(string orderId, TStatus status);
+        void ChangeShipmentStatus<TModel, TStatus>(TModel order, TStatus status);
 
     }
 }

@@ -40,18 +40,62 @@ namespace ToErp.APP.Integrations.OdooErp
             var order = entity as Order;
 
             WriteSaleOrder(order);
+            var orderId = order.OrderID.ToString();
+
+            var shipment = GetShipmentOrder(orderId);
+            if (shipment != null)
+            {
+                shipment.SetFieldValue("shipment_partner_id", GetShipmentProviderId("Yurtiçi Kargo"));
+                shipment.SetFieldValue("shipment_code", orderId);
+                shipment.Save();
+
+            }
         }
-        public void ChangeOrderStatus<TStatus>(string orderId, TStatus status)
+        public int GetShipmentProviderId(string name)
         {
+            var rpcContext = new RpcContext(_rpcConnection, "res.partner");
+
+            rpcContext
+                .RpcFilter.Equal("name", name);
+
+            rpcContext
+                .AddField("id")
+                .AddField("name");
+
+            var data = rpcContext.Execute(limit: 1);
+            return data.Count() < 0 ? 0 : data.FirstOrDefault().Id;
+        }
+        public void ChangeOrderStatus<TModel, TStatus>(TModel order, TStatus status)
+        {
+            var commerceOrder = order as Order;
+
             OdooOrderStatus orderStatus = ParseOdooOrderStatusToEnum(status);
+
+            var orderId = commerceOrder.OrderID.ToString();
+
             var saleOrder = GetOrderFromErp<RpcRecord>(orderId);
-            saleOrder.SetFieldValue("state", orderStatus.ToString());
-            saleOrder.Save();
+            if (saleOrder != null)
+            {
+                saleOrder.SetFieldValue("logo_erp_company_id", _logoCompanyId);
+                saleOrder.SetFieldValue("state", orderStatus.ToString());
+                saleOrder.Save();
+            }
 
         }
-        public void ChangeShipmentStatus<TStatus>(string orderId, TStatus status)
+        public void ChangeShipmentStatus<TModel, TStatus>(TModel order, TStatus status)
         {
+            var commerceOrder = order as Order;
+            var orderId = commerceOrder.OrderID.ToString();
+
             OrderStatus orderStatus = ParseStatusToEnum(status);
+
+            var shipment = GetShipmentOrder(orderId);
+            if (shipment != null)
+            {
+                shipment.SetFieldValue("shipment_tracking_code", commerceOrder.ShipReferenceCode);
+                shipment.Save();
+            }
+
             ChangeShipmentStatusToErp(orderId, orderStatus);
         }
         public T GetOrderFromErp<T>(string orderId) where T : class
@@ -69,7 +113,7 @@ namespace ToErp.APP.Integrations.OdooErp
             var partner = CreatePartner(order);
 
             var whichOrder = GetOrderState(order.OrderPayments).ToString();
-            
+
             var orderLine = GetSaleOrderLine(order);
 
             RpcRecord record = new RpcRecord(_rpcConnection, "sale.order", -1, new List<RpcField>
@@ -90,7 +134,7 @@ namespace ToErp.APP.Integrations.OdooErp
                 //new RpcField{FieldName = "warehouse_id", Value = 5},
                 new RpcField{FieldName = "website_id", Value = 1},
                 new RpcField{FieldName = "state", Value = whichOrder}, //Onaylı Sipariş ise
-                new RpcField{FieldName = "order_line", Value =  orderLine.ToArray() }
+               new RpcField{FieldName = "order_line", Value =  orderLine.ToArray() }
             });
             record.Save();
             return record;
@@ -101,7 +145,7 @@ namespace ToErp.APP.Integrations.OdooErp
 
             foreach (var item in orderPayments)
             {
-                if (item.PaymentTypeDesc.Contains("Kapıda Ödeme",StringComparison.OrdinalIgnoreCase) || item.PaymentTypeDesc.Contains("Havale", StringComparison.OrdinalIgnoreCase))
+                if (item.PaymentTypeDesc.Contains("Kapıda Ödeme", StringComparison.OrdinalIgnoreCase) || item.PaymentTypeDesc.Contains("Havale", StringComparison.OrdinalIgnoreCase))
                 {
                     return OdooOrderStatus.draft;
                 }
@@ -124,7 +168,7 @@ namespace ToErp.APP.Integrations.OdooErp
                 }
                 List<RpcRecord> bundleLine = new List<RpcRecord>();
 
-                var bundleProduct = ProcessIfBundleProduct(product, bundleLine);
+                var bundleProduct = ProcessIfBundleProduct(product, bundleLine, order.OrderSubTotal);
 
 
                 if (bundleLine.Count > 0)
@@ -138,7 +182,7 @@ namespace ToErp.APP.Integrations.OdooErp
                 RpcRecord record = CreateOrderLine(
                     product.Id,
                     product.GetField("name").Value,
-                    Convert.ToInt64(line.LineTotal), line.Quantity,
+                    line.LineTotal, line.Quantity,
                     product.GetField("taxes_id").Value);
 
 
@@ -274,6 +318,9 @@ namespace ToErp.APP.Integrations.OdooErp
             rpcContext.RpcFilter.Equal("origin", orderId);
 
             rpcContext.AddField("id")
+                .AddField("shipment_code")
+                .AddField("shipment_partner_id")
+                .AddField("shipment_tracking_code")
                 .AddField("x_shipment_status");
 
             var data = rpcContext.Execute(true, limit: 1);
@@ -311,7 +358,7 @@ namespace ToErp.APP.Integrations.OdooErp
             return new RpcRecord(_rpcConnection, "sale.order.line", -1, new List<RpcField>
                             {
                                 new RpcField{FieldName = "name", Value = name},
-                                new RpcField{FieldName = "price_unit", Value = Convert.ToInt64(lineTotal)},
+                                new RpcField{FieldName = "price_unit", Value = lineTotal.HasValue ? lineTotal.Value.ToString() : "0"},
                                 new RpcField{FieldName = "product_uom_qty", Value = lineQuantity},
                                 new RpcField{FieldName = "product_id", Value = productId},
                                 new RpcField{FieldName = "tax_id", Value = taxes_id},
@@ -332,7 +379,7 @@ namespace ToErp.APP.Integrations.OdooErp
 
             return price;
         }
-        private List<RpcRecord> ProcessIfBundleProduct(RpcRecord rpcRecord, List<RpcRecord> bundleLine)
+        private List<RpcRecord> ProcessIfBundleProduct(RpcRecord rpcRecord, List<RpcRecord> bundleLine, decimal orderSubTotal)
         {
             if (rpcRecord != null)
             {
@@ -364,16 +411,16 @@ namespace ToErp.APP.Integrations.OdooErp
 
                                 var product = GetProductById(productId.Id);
 
+                                decimal price = (Convert.ToDecimal(mrpBomLineId.GetField("amount_percent").Value) * orderSubTotal) / 100;
+
                                 if (IsBundleProduct(product))
                                 {
-                                    return ProcessIfBundleProduct(product, bundleLine);
+                                    return ProcessIfBundleProduct(product, bundleLine, price);
                                 }
-
-                                decimal? price = (Convert.ToDecimal(mrpBomLineId.GetField("amount_percent").Value) * Convert.ToDecimal(rpcRecord.GetField("list_price").Value)) / 100;
 
                                 bundleLine.Add(CreateOrderLine(product.Id,
                                         product.GetField("name").Value,
-                                        Convert.ToInt64(price), Convert.ToInt32(mrpBomLineId.GetField("product_qty").Value),
+                                        price, Convert.ToInt32(mrpBomLineId.GetField("product_qty").Value),
                                         product.GetField("taxes_id").Value));
                             }
 

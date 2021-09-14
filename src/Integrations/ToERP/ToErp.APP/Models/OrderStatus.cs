@@ -11,7 +11,6 @@ namespace ToErp.APP.Models
 
         SiparisHazırlanıyor = 0,
         Gönderildi = 1,
-        GönderildiAktarildi= 50,
         İptalEdildi = 2,
         OdemeOnayiBekliyor = 3,
         TedarikEdilemedi = 5,
@@ -23,7 +22,5 @@ namespace ToErp.APP.Models
         Faturalandi = 12,
         GonderimeHazirlaniyor = 13,
         Aktarildi = 16,
-        IptalAktarildi = 17,
-        TamamlandiAktarildi=45
     }
 }
