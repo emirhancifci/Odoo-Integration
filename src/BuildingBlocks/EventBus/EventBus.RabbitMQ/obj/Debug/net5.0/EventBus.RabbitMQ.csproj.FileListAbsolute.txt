@@ -1,0 +1,17 @@
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\bin\Debug\net5.0\EventBus.RabbitMQ.deps.json
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\bin\Debug\net5.0\EventBus.RabbitMQ.dll
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\bin\Debug\net5.0\ref\EventBus.RabbitMQ.dll
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\bin\Debug\net5.0\EventBus.RabbitMQ.pdb
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\bin\Debug\net5.0\EventBus.Base.dll
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\bin\Debug\net5.0\EventBus.Service.dll
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\bin\Debug\net5.0\EventBus.Service.pdb
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\bin\Debug\net5.0\EventBus.Base.pdb
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\obj\Debug\net5.0\EventBus.RabbitMQ.csproj.AssemblyReference.cache
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\obj\Debug\net5.0\EventBus.RabbitMQ.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\obj\Debug\net5.0\EventBus.RabbitMQ.AssemblyInfoInputs.cache
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\obj\Debug\net5.0\EventBus.RabbitMQ.AssemblyInfo.cs
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\obj\Debug\net5.0\EventBus.RabbitMQ.csproj.CoreCompileInputs.cache
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\obj\Debug\net5.0\EventBus.RabbitMQ.csproj.CopyComplete
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\obj\Debug\net5.0\EventBus.RabbitMQ.dll
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\obj\Debug\net5.0\ref\EventBus.RabbitMQ.dll
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\BuildingBlocks\EventBus\EventBus.RabbitMQ\obj\Debug\net5.0\EventBus.RabbitMQ.pdb

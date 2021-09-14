@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "OTwLpws0ZTLcxr4pLieLIOsbi1ovXI5S3JR4arKBqebxUX/M/4q34OSiS4niBoJQSpcbyZQxlswFsHGqLERmIg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Emirhan\\Desktop\\KumtelToOdo\\ErpIntegration\\src\\BuildingBlocks\\EventBus\\EventBus.Base\\EventBus.Base.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Emirhan\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

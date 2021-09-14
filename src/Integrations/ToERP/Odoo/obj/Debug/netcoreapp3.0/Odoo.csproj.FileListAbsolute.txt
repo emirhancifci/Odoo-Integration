@@ -1,0 +1,10 @@
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\bin\Debug\netcoreapp3.0\Odoo.deps.json
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\bin\Debug\netcoreapp3.0\Odoo.dll
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\bin\Debug\netcoreapp3.0\Odoo.pdb
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\obj\Debug\netcoreapp3.0\Odoo.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\obj\Debug\netcoreapp3.0\Odoo.AssemblyInfoInputs.cache
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\obj\Debug\netcoreapp3.0\Odoo.AssemblyInfo.cs
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\obj\Debug\netcoreapp3.0\Odoo.csproj.CoreCompileInputs.cache
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\obj\Debug\netcoreapp3.0\Odoo.dll
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\obj\Debug\netcoreapp3.0\Odoo.pdb
+C:\Users\Emirhan\Desktop\KumtelToOdo\ErpIntegration\src\Integrations\ToERP\Odoo\obj\Debug\netcoreapp3.0\Odoo.csproj.AssemblyReference.cache

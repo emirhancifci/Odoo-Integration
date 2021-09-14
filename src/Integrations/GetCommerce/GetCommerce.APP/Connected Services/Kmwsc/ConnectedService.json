@@ -1,0 +1,50 @@
+{
+  "ExtendedData": {
+    "inputs": [
+      "http://demo.omnieticaret.com/omservices/omservice.svc"
+    ],
+    "collectionTypes": [
+      "System.Array",
+      "System.Collections.Generic.Dictionary`2"
+    ],
+    "namespaceMappings": [
+      "*, Kmwsc"
+    ],
+    "references": [
+      "C:\\Users\\Emirhan\\Desktop\\KumtelToOdo\\ErpIntegration\\src\\Integrations\\GetCommerce\\GetCommerce.APP\\bin\\Debug\\net5.0\\EventBus.Base.dll",
+      "C:\\Users\\Emirhan\\Desktop\\KumtelToOdo\\ErpIntegration\\src\\Integrations\\GetCommerce\\GetCommerce.APP\\bin\\Debug\\net5.0\\EventBus.Factory.dll",
+      "C:\\Users\\Emirhan\\Desktop\\KumtelToOdo\\ErpIntegration\\src\\Integrations\\GetCommerce\\GetCommerce.APP\\bin\\Debug\\net5.0\\EventBus.RabbitMQ.dll",
+      "C:\\Users\\Emirhan\\Desktop\\KumtelToOdo\\ErpIntegration\\src\\Integrations\\GetCommerce\\GetCommerce.APP\\bin\\Debug\\net5.0\\EventBus.Service.dll",
+      "Microsoft.Extensions.Configuration, {Microsoft.Extensions.Configuration, 5.0.0}",
+      "Microsoft.Extensions.Configuration.Abstractions, {Microsoft.Extensions.Configuration.Abstractions, 5.0.0}",
+      "Microsoft.Extensions.Configuration.Binder, {Microsoft.Extensions.Configuration.Binder, 5.0.0}",
+      "Microsoft.Extensions.DependencyInjection, {Microsoft.Extensions.DependencyInjection, 5.0.2}",
+      "Microsoft.Extensions.DependencyInjection.Abstractions, {Microsoft.Extensions.DependencyInjection.Abstractions, 5.0.0}",
+      "Microsoft.Extensions.Logging, {Microsoft.Extensions.Logging, 5.0.0}",
+      "Microsoft.Extensions.Logging.Abstractions, {Microsoft.Extensions.Logging.Abstractions, 5.0.0}",
+      "Microsoft.Extensions.Logging.Configuration, {Microsoft.Extensions.Logging.Configuration, 5.0.0}",
+      "Microsoft.Extensions.Logging.Console, {Microsoft.Extensions.Logging.Console, 5.0.0}",
+      "Microsoft.Extensions.Options, {Microsoft.Extensions.Options, 5.0.0}",
+      "Microsoft.Extensions.Options.ConfigurationExtensions, {Microsoft.Extensions.Options.ConfigurationExtensions, 5.0.0}",
+      "Microsoft.Extensions.Primitives, {Microsoft.Extensions.Primitives, 5.0.0}",
+      "Newtonsoft.Json, {Newtonsoft.Json, 13.0.1}",
+      "Polly, {Polly, 7.2.2}",
+      "RabbitMQ.Client, {RabbitMQ.Client, 6.2.2}",
+      "System.Reflection.DispatchProxy, {System.Reflection.DispatchProxy, 4.7.1}",
+      "System.Security.AccessControl, {System.Security.AccessControl, 4.7.0}",
+      "System.Security.Cryptography.Xml, {System.Security.Cryptography.Xml, 4.7.0}",
+      "System.Security.Permissions, {System.Security.Permissions, 4.7.0}",
+      "System.Security.Principal.Windows, {System.Security.Principal.Windows, 4.7.0}",
+      "System.ServiceModel, {System.ServiceModel.Primitives, 4.8.1}",
+      "System.ServiceModel.Duplex, {System.ServiceModel.Duplex, 4.8.1}",
+      "System.ServiceModel.Http, {System.ServiceModel.Http, 4.8.1}",
+      "System.ServiceModel.NetTcp, {System.ServiceModel.NetTcp, 4.8.1}",
+      "System.ServiceModel.Primitives, {System.ServiceModel.Primitives, 4.8.1}",
+      "System.ServiceModel.Security, {System.ServiceModel.Security, 4.8.1}",
+      "System.Threading.Channels, {System.Threading.Channels, 4.7.1}",
+      "System.Windows.Extensions, {System.Windows.Extensions, 4.7.0}"
+    ],
+    "targetFramework": "net5.0",
+    "typeReuseMode": "All"
+  }
+}
