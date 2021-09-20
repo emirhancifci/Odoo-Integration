@@ -38,6 +38,7 @@ namespace ToErp.APP
             eventBus.Subcribe<GetOrdersIntegrationEvent, GetOrderIntegrationEventHandler>();
             eventBus.Subcribe<GetSentOrdersIntegrationEvent, GetSentOrderIntegrationEventHandler>();
             eventBus.Subcribe<GetCancelledOrdersIntegrationEvent, GetCancelledIntegrationEventHandler>();
+            eventBus.Subcribe<GetCompletedOrdersIntegrationEvent, GetCompletedOrdersIntegrationEventHandler>();
             eventBus.Subcribe<CheckPriceIntegrationEvent, CheckPriceIntegrationEventHandler>();
 
             Console.CancelKeyPress += new ConsoleCancelEventHandler(OnExit);
@@ -61,6 +62,7 @@ namespace ToErp.APP
             services.AddTransient<GetOrderIntegrationEventHandler>();
             services.AddTransient<GetCancelledIntegrationEventHandler>();
             services.AddTransient<GetSentOrderIntegrationEventHandler>();
+            services.AddTransient<GetCompletedOrdersIntegrationEventHandler>();
             services.AddTransient<CheckPriceIntegrationEventHandler>();
 
             services.AddSingleton<IEventBus>(sp =>

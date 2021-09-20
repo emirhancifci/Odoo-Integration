@@ -51,10 +51,11 @@ namespace GetCommerce.APP
             _eventBus.Subcribe<ChangeOrderStatusIntegrationEvent, ChangeOrderStatusIntegrationEventHandler>();
 
             //StartJobs();
-           // ProcessNewOrder();
+            // ProcessNewOrder();
 
-            ProcessSentOrders();
-          // ProcessCancelledOrders();
+            //  ProcessSentOrders();
+              ProcessCancelledOrders();
+           // ProcessCompletedOrders();
           //  using var server = new BackgroundJobServer();
 
             Console.CancelKeyPress += new ConsoleCancelEventHandler(OnExit);
@@ -63,6 +64,7 @@ namespace GetCommerce.APP
 
         }
         #endregion
+
         #region methods
 
         public static void ProcessNewOrder()

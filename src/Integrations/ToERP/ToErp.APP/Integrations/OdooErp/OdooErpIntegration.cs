@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ToErp.APP.Integrations.Abstractions;
+using ToErp.APP.Integrations.Helpers;
 using ToErp.APP.Models;
 using ToErp.APP.Models.ConfigModel;
 using ToErp.APP.Models.OdooModel;
@@ -18,7 +19,7 @@ namespace ToErp.APP.Integrations.OdooErp
         #region fields
 
         private readonly RpcConnection _rpcConnection;
-        private int _logoCompanyId = 2;
+        private int _logoCompanyId = OdooFieldHelper.DefaultLogoCompany;
         private bool _disposed;
         private ILogger<OdooErpIntegration> _logger;
 
@@ -45,22 +46,21 @@ namespace ToErp.APP.Integrations.OdooErp
             var shipment = GetShipmentOrder(orderId);
             if (shipment != null)
             {
-                shipment.SetFieldValue("shipment_partner_id", GetShipmentProviderId("Yurtiçi Kargo"));
-                shipment.SetFieldValue("shipment_code", orderId);
+                shipment.SetFieldValue(OdooFieldHelper.ShipmentPartnerId, GetShipmentProviderId(OdooFieldHelper.YurticiKargo));
+                shipment.SetFieldValue(OdooFieldHelper.ShipmentCode, orderId);
                 shipment.Save();
-
             }
         }
         public int GetShipmentProviderId(string name)
         {
-            var rpcContext = new RpcContext(_rpcConnection, "res.partner");
+            var rpcContext = new RpcContext(_rpcConnection, OdooFieldHelper.ResPartner);
 
             rpcContext
-                .RpcFilter.Equal("name", name);
+                .RpcFilter.Equal(OdooFieldHelper.Name, name);
 
             rpcContext
-                .AddField("id")
-                .AddField("name");
+                .AddField(OdooFieldHelper.Id)
+                .AddField(OdooFieldHelper.Name);
 
             var data = rpcContext.Execute(limit: 1);
             return data.Count() < 0 ? 0 : data.FirstOrDefault().Id;
@@ -76,8 +76,8 @@ namespace ToErp.APP.Integrations.OdooErp
             var saleOrder = GetOrderFromErp<RpcRecord>(orderId);
             if (saleOrder != null)
             {
-                saleOrder.SetFieldValue("logo_erp_company_id", _logoCompanyId);
-                saleOrder.SetFieldValue("state", orderStatus.ToString());
+                saleOrder.SetFieldValue(OdooFieldHelper.LogoErpCompanyId, _logoCompanyId);
+                saleOrder.SetFieldValue(OdooFieldHelper.State, orderStatus.ToString());
                 saleOrder.Save();
             }
 
@@ -85,18 +85,29 @@ namespace ToErp.APP.Integrations.OdooErp
         public void ChangeShipmentStatus<TModel, TStatus>(TModel order, TStatus status)
         {
             var commerceOrder = order as Order;
-            var orderId = commerceOrder.OrderID.ToString();
 
-            OrderStatus orderStatus = ParseStatusToEnum(status);
-
-            var shipment = GetShipmentOrder(orderId);
-            if (shipment != null)
+            if (!string.IsNullOrEmpty(commerceOrder?.ShipperNote))
             {
-                shipment.SetFieldValue("shipment_tracking_code", commerceOrder.ShipReferenceCode);
-                shipment.Save();
+                var orderId = commerceOrder.OrderID.ToString();
+
+                OrderStatus orderStatus = ParseStatusToEnum(status);
+
+                var shipment = GetShipmentOrder(orderId);
+
+                if (shipment != null)
+                {
+
+                    shipment.SetFieldValue(OdooFieldHelper.ShipmentTrackingCode, commerceOrder.ShipperNote);
+                    ChangeShipmentStatusToErp(shipment, orderStatus);
+                    shipment.Save();
+
+                }
+            }
+            else
+            {
+                throw new Exception("ShipperNote is not empty");
             }
 
-            ChangeShipmentStatusToErp(orderId, orderStatus);
         }
         public T GetOrderFromErp<T>(string orderId) where T : class
         {
@@ -116,36 +127,32 @@ namespace ToErp.APP.Integrations.OdooErp
 
             var orderLine = GetSaleOrderLine(order);
 
-            RpcRecord record = new RpcRecord(_rpcConnection, "sale.order", -1, new List<RpcField>
+            RpcRecord record = new RpcRecord(_rpcConnection, OdooFieldHelper.SaleOrder, -1, new List<RpcField>
             {
-
-                //new RpcField{FieldName = "client_order_ref", Value = "REF-1"},
-               // new RpcField{FieldName = "company_id", Value = 1 },
-                new RpcField{FieldName = "logo_erp_company_id", Value = _logoCompanyId },
-                new RpcField{FieldName = "user_id", Value = 56},
-                new RpcField{FieldName = "currency_id", Value = 31},
-                new RpcField{FieldName = "date_order", Value = order.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")},
-                new RpcField{FieldName = "name", Value = order.OrderID.ToString()},
-                new RpcField{FieldName = "partner_id", Value = partner.Id},
-                new RpcField{FieldName = "partner_invoice_id", Value = partner.Id},
-                new RpcField{FieldName = "partner_shipping_id", Value = partner.Id},
-                new RpcField{FieldName = "picking_policy", Value = "one"},
-                new RpcField{FieldName = "pricelist_id", Value = 1},
-                //new RpcField{FieldName = "warehouse_id", Value = 5},
-                new RpcField{FieldName = "website_id", Value = 1},
-                new RpcField{FieldName = "state", Value = whichOrder}, //Onaylı Sipariş ise
-               new RpcField{FieldName = "order_line", Value =  orderLine.ToArray() }
+                new RpcField{FieldName = OdooFieldHelper.LogoErpCompanyId, Value = _logoCompanyId },
+                new RpcField{FieldName = OdooFieldHelper.UserId, Value = 56},
+                new RpcField{FieldName = OdooFieldHelper.CurrencyId, Value = 31},
+                new RpcField{FieldName = OdooFieldHelper.DateOrder, Value = order.OrderDate.ToString(OdooFieldHelper.DateFormat)},
+                new RpcField{FieldName = OdooFieldHelper.Name, Value = order.OrderID.ToString()},
+                new RpcField{FieldName = OdooFieldHelper.PartnerId, Value = partner.Id},
+                new RpcField{FieldName = OdooFieldHelper.PartnerInvoiceId, Value = partner.Id},
+                new RpcField{FieldName = OdooFieldHelper.PartnerShippingId, Value = partner.Id},
+                new RpcField{FieldName = OdooFieldHelper.PickingPolicy, Value = "one"},
+                new RpcField{FieldName = OdooFieldHelper.PricelistId, Value = 1},
+                new RpcField{FieldName = OdooFieldHelper.WebsiteId, Value = 1},
+                new RpcField{FieldName = OdooFieldHelper.State, Value = whichOrder}, //Onaylı Sipariş ise
+                new RpcField{FieldName = OdooFieldHelper.OrderLine, Value =  orderLine.ToArray() }
             });
             record.Save();
             return record;
         }
-
         private OdooOrderStatus GetOrderState(OrderPayment[] orderPayments)
         {
 
             foreach (var item in orderPayments)
             {
-                if (item.PaymentTypeDesc.Contains("Kapıda Ödeme", StringComparison.OrdinalIgnoreCase) || item.PaymentTypeDesc.Contains("Havale", StringComparison.OrdinalIgnoreCase))
+                if (item.PaymentTypeDesc.Contains(OdooFieldHelper.PayAtTheDoor, StringComparison.OrdinalIgnoreCase)
+                    || item.PaymentTypeDesc.Contains(OdooFieldHelper.Transfer, StringComparison.OrdinalIgnoreCase))
                 {
                     return OdooOrderStatus.draft;
                 }
@@ -154,18 +161,18 @@ namespace ToErp.APP.Integrations.OdooErp
 
             return OdooOrderStatus.sale;
         }
-
         private List<object> GetSaleOrderLine(Order order)
         {
             var orderLine = new List<object>();
             foreach (var line in order.OrderDetails)
             {
-                var product = GetSearchProductByDefaultCode(line.SKU); //"KK000177");
+                var product = GetSearchProductByDefaultCode(line.SKU);
                 if (product == null)
                 {
                     _logger.LogWarning($"Odoo'da Commerce'den gelen SKU({line.SKU})'lu urun bulunamadı");
                     continue;
                 }
+
                 List<RpcRecord> bundleLine = new List<RpcRecord>();
 
                 var bundleProduct = ProcessIfBundleProduct(product, bundleLine, order.OrderSubTotal);
@@ -178,12 +185,11 @@ namespace ToErp.APP.Integrations.OdooErp
                     continue;
                 }
 
-                //decimal? odooPrice = GetOdooPriceFromProduct(product);
                 RpcRecord record = CreateOrderLine(
                     product.Id,
-                    product.GetField("name").Value,
+                    product.GetField(OdooFieldHelper.Name).Value,
                     line.LineTotal, line.Quantity,
-                    product.GetField("taxes_id").Value);
+                    product.GetField(OdooFieldHelper.TaxesId).Value);
 
 
                 orderLine.Add(new object[] { 0, 0, record.GetRecord() });
@@ -193,22 +199,21 @@ namespace ToErp.APP.Integrations.OdooErp
         }
         private RpcRecord CreatePartner(Order order)
         {
-            //TODO : IF check already exist partner 
-            var stateId = GetCountryStateByName(order.ShipCity);
-            //var taxId = GetTaxId(order.TaxOffice);
-            var countryId = GetCountryId("TR");
-            RpcRecord partner = new RpcRecord(_rpcConnection, "res.partner", -1, new List<RpcField>
+            var stateId = GetCountryStateByName(order.ShipCity);   
+            
+            var countryId = GetCountryId(OdooFieldHelper.TR);
+
+            RpcRecord partner = new RpcRecord(_rpcConnection, OdooFieldHelper.ResPartner, -1, new List<RpcField>
             {
-                new RpcField{FieldName = "name", Value = $"{order.ShipName} {order.ShipLastName}"},
-                new RpcField{FieldName = "email", Value = order.Email},
-                //new RpcField{FieldName = "phone", Value = order.ShipMobilePhone},
-                new RpcField{FieldName = "street", Value = order.ShipTown},
-                new RpcField{FieldName = "street2", Value = order.ShipAddress},
-                new RpcField{FieldName = "city", Value = order.ShipCity},
-                new RpcField{FieldName = "state_id", Value = stateId},
-                new RpcField{FieldName = "country_id", Value = countryId },
-                new RpcField{FieldName = "vat", Value = String.IsNullOrEmpty(order.TaxNumber) ? "11111111111" : order.TaxNumber },
-                //new RpcField{FieldName = "parent_id", Value = false },
+                new RpcField{FieldName = OdooFieldHelper.Name, Value = $"{order.ShipName} {order.ShipLastName}"},
+                new RpcField{FieldName = OdooFieldHelper.Email, Value = order.Email},
+                new RpcField{FieldName = OdooFieldHelper.Street, Value = order.ShipTown},
+                new RpcField{FieldName = OdooFieldHelper.Street2, Value = order.ShipAddress},
+                new RpcField{FieldName = OdooFieldHelper.City, Value = order.ShipCity},
+                new RpcField{FieldName = OdooFieldHelper.StateId, Value = stateId},
+                new RpcField{FieldName = OdooFieldHelper.CountryId, Value = countryId },
+                new RpcField{FieldName = OdooFieldHelper.Vat, Value = String.IsNullOrEmpty(order.TaxNumber) ? OdooFieldHelper.DefaultVat : order.TaxNumber },
+              
             });
 
             partner.Save();
@@ -218,24 +223,31 @@ namespace ToErp.APP.Integrations.OdooErp
         }
         public int GetCountryId(string countryCode)
         {
-            var rpcContext = new RpcContext(_rpcConnection, "res.country");
-            rpcContext.RpcFilter.Equal("code", countryCode);
-            rpcContext.AddField("id");
+            var rpcContext = new RpcContext(_rpcConnection, OdooFieldHelper.ResCountry);
+            
+            rpcContext
+                .RpcFilter
+                .Equal(OdooFieldHelper.Code, countryCode);
+            
+            rpcContext.AddField(OdooFieldHelper.Id);
+
             var data = rpcContext.Execute(limit: 1);
-            var ulke = data.FirstOrDefault().Id;
-            return ulke;
+            
+            var country = data.FirstOrDefault().Id;
+            
+            return country;
         }
         private int GetCountryStateByName(string stateName)
         {
             stateName = CapitalizeName(stateName);
 
-            var rpcContext = new RpcContext(_rpcConnection, "res.country.state");
+            var rpcContext = new RpcContext(_rpcConnection, OdooFieldHelper.ResCountryState);
 
             rpcContext
-                .RpcFilter.Equal("name", stateName);
+                .RpcFilter.Equal(OdooFieldHelper.Name, stateName);
 
             rpcContext
-                .AddField("id");
+                .AddField(OdooFieldHelper.Id);
 
             var data = rpcContext.Execute(limit: 1);
             return data.FirstOrDefault().Id;
@@ -243,62 +255,62 @@ namespace ToErp.APP.Integrations.OdooErp
         }
         private RpcRecord GetSearchProductByDefaultCode(string defaultCode)
         {
-            var rpcContext = new RpcContext(_rpcConnection, "product.product");
+            var rpcContext = new RpcContext(_rpcConnection, OdooFieldHelper.ProductProduct);
 
             rpcContext
                 .RpcFilter
-                .Equal("default_code", defaultCode);
+                .Equal(OdooFieldHelper.DefaultCode, defaultCode);
 
             rpcContext
-                .AddField("id")
-                .AddField("name")
-                .AddField("taxes_id")
-                .AddField("list_price")
-                .AddField("bom_count")
-                .AddField("product_tmpl_id");
+                .AddField(OdooFieldHelper.Id)
+                .AddField(OdooFieldHelper.Name)
+                .AddField(OdooFieldHelper.TaxesId)
+                .AddField(OdooFieldHelper.ListPrice)
+                .AddField(OdooFieldHelper.BomCount)
+                .AddField(OdooFieldHelper.ProductTmplId);
 
             var data = rpcContext.Execute(true, limit: 1);
             return data.FirstOrDefault();
         }
         private RpcRecord GetProductById(int id)
         {
-            var rpcContext = new RpcContext(_rpcConnection, "product.product");
+            var rpcContext = new RpcContext(_rpcConnection, OdooFieldHelper.ProductProduct);
 
             rpcContext
                 .RpcFilter
-                .Equal("id", id);
+                .Equal(OdooFieldHelper.Id, id);
 
             rpcContext
-                .AddField("id")
-                .AddField("name")
-                .AddField("taxes_id")
-                .AddField("list_price")
-                .AddField("bom_count")
-                .AddField("product_tmpl_id");
+                .AddField(OdooFieldHelper.Id)
+                .AddField(OdooFieldHelper.Name)
+                .AddField(OdooFieldHelper.TaxesId)
+                .AddField(OdooFieldHelper.ListPrice)
+                .AddField(OdooFieldHelper.BomCount)
+                .AddField(OdooFieldHelper.ProductTmplId);
 
             var data = rpcContext.Execute(true, limit: 1);
             return data.FirstOrDefault();
         }
         private RpcRecord GetSaleOrder(string orderId)
         {
-            var rpcContext = new RpcContext(_rpcConnection, "sale.order");
+            var rpcContext = new RpcContext(_rpcConnection, OdooFieldHelper.SaleOrder);
 
-            rpcContext.RpcFilter.Equal("name", orderId);
+            rpcContext.RpcFilter.Equal(OdooFieldHelper.Name, orderId);
 
-            rpcContext.AddField("id")
-                .AddField("amount_total")
-                .AddField("x_price_check")
-                .AddField("state");
+            rpcContext.AddField(OdooFieldHelper.Id)
+                .AddField(OdooFieldHelper.AmountTotal)
+                .AddField(OdooFieldHelper.XPriceCheck)
+                .AddField(OdooFieldHelper.State);
 
             var data = rpcContext.Execute(true, limit: 1);
             return data.FirstOrDefault();
 
         }
-        private void ChangeShipmentStatusToErp(string orderId, OrderStatus orderStatus = OrderStatus.Gönderildi)
+        private void ChangeShipmentStatusToErp(RpcRecord shipment, OrderStatus orderStatus = OrderStatus.Gönderildi)
         {
-            var curiousField = "x_shipment_status";
-            var shipmentOrder = GetShipmentOrder(orderId);
-            var status = shipmentOrder.GetField(curiousField).Value?.ToString();
+            var curiousField = OdooFieldHelper.XShipmentStatus;
+
+            var status = shipment.GetField(curiousField).Value?.ToString();
             if (status != null)
             {
                 if (status.Equals(orderStatus))
@@ -307,21 +319,19 @@ namespace ToErp.APP.Integrations.OdooErp
                 }
 
             }
-            shipmentOrder.SetFieldValue(curiousField, orderStatus.ToString());
-            shipmentOrder.Save();
-
+            shipment.SetFieldValue(curiousField, orderStatus.ToString());
         }
         private RpcRecord GetShipmentOrder(string orderId)
         {
-            var rpcContext = new RpcContext(_rpcConnection, "stock.picking");
+            var rpcContext = new RpcContext(_rpcConnection, OdooFieldHelper.StockPicking);
 
-            rpcContext.RpcFilter.Equal("origin", orderId);
+            rpcContext.RpcFilter.Equal(OdooFieldHelper.Origin, orderId);
 
-            rpcContext.AddField("id")
-                .AddField("shipment_code")
-                .AddField("shipment_partner_id")
-                .AddField("shipment_tracking_code")
-                .AddField("x_shipment_status");
+            rpcContext.AddField(OdooFieldHelper.Id)
+                .AddField(OdooFieldHelper.ShipmentCode)
+                .AddField(OdooFieldHelper.ShipmentPartnerId)
+                .AddField(OdooFieldHelper.ShipmentTrackingCode)
+                .AddField(OdooFieldHelper.XShipmentStatus);
 
             var data = rpcContext.Execute(true, limit: 1);
             return data.FirstOrDefault();
@@ -355,13 +365,13 @@ namespace ToErp.APP.Integrations.OdooErp
         }
         private RpcRecord CreateOrderLine(int productId, object name, decimal? lineTotal, int lineQuantity, object taxes_id)
         {
-            return new RpcRecord(_rpcConnection, "sale.order.line", -1, new List<RpcField>
+            return new RpcRecord(_rpcConnection, OdooFieldHelper.SaleOrderLine, -1, new List<RpcField>
                             {
-                                new RpcField{FieldName = "name", Value = name},
-                                new RpcField{FieldName = "price_unit", Value = lineTotal.HasValue ? lineTotal.Value.ToString() : "0"},
-                                new RpcField{FieldName = "product_uom_qty", Value = lineQuantity},
-                                new RpcField{FieldName = "product_id", Value = productId},
-                                new RpcField{FieldName = "tax_id", Value = taxes_id},
+                                new RpcField{FieldName = OdooFieldHelper.Name, Value = name},
+                                new RpcField{FieldName = OdooFieldHelper.PriceUnit, Value = lineTotal.HasValue ? lineTotal.Value.ToString() : "0"},
+                                new RpcField{FieldName = OdooFieldHelper.ProductUomQty, Value = lineQuantity},
+                                new RpcField{FieldName = OdooFieldHelper.ProductId, Value = productId},
+                                new RpcField{FieldName = OdooFieldHelper.TaxId, Value = taxes_id},
                             });
         }
         private decimal? GetOdooPriceFromProduct(RpcRecord product)
@@ -369,12 +379,12 @@ namespace ToErp.APP.Integrations.OdooErp
             decimal? price = null;
             try
             {
-                price = Convert.ToDecimal(product.GetField("list_price").Value);
+                price = Convert.ToDecimal(product.GetField(OdooFieldHelper.ListPrice).Value);
 
             }
             catch (Exception exception)
             {
-                _logger.LogError($"{product.GetField("name").Value} an error occurred during convert , exception : {exception.Message}");
+                _logger.LogError($"{product.GetField(OdooFieldHelper.Name).Value} an error occurred during convert , exception : {exception.Message}");
             }
 
             return price;
@@ -391,11 +401,11 @@ namespace ToErp.APP.Integrations.OdooErp
                 }
                 var mrpBomCompenent = GetMrpBom();
 
-                var productProductTemplate = RpcRecordResponseModel.RpcRecordParseToResponseModel(rpcRecord, "product_tmpl_id");
+                var productProductTemplate = RpcRecordResponseModel.RpcRecordParseToResponseModel(rpcRecord, OdooFieldHelper.ProductTmplId);
 
                 foreach (var item in mrpBomCompenent)
                 {
-                    var mrpBomproductTemplate = RpcRecordResponseModel.RpcRecordParseToResponseModel(item, "product_tmpl_id");
+                    var mrpBomproductTemplate = RpcRecordResponseModel.RpcRecordParseToResponseModel(item, OdooFieldHelper.ProductTmplId);
 
                     if (productProductTemplate.Id == mrpBomproductTemplate.Id)
                     {
@@ -403,15 +413,15 @@ namespace ToErp.APP.Integrations.OdooErp
 
                         foreach (var mrpBomLineId in mrpBomLineCompenent)
                         {
-                            var mrpBomLineBomId = RpcRecordResponseModel.RpcRecordParseToResponseModel(mrpBomLineId, "bom_id");
+                            var mrpBomLineBomId = RpcRecordResponseModel.RpcRecordParseToResponseModel(mrpBomLineId, OdooFieldHelper.BomId);
 
                             if (mrpBomLineBomId.Id == item.Id)
                             {
-                                var productId = RpcRecordResponseModel.RpcRecordParseToResponseModel(mrpBomLineId, "product_id");
+                                var productId = RpcRecordResponseModel.RpcRecordParseToResponseModel(mrpBomLineId, OdooFieldHelper.ProductId);
 
                                 var product = GetProductById(productId.Id);
 
-                                decimal price = (Convert.ToDecimal(mrpBomLineId.GetField("amount_percent").Value) * orderSubTotal) / 100;
+                                decimal price = (Convert.ToDecimal(mrpBomLineId.GetField(OdooFieldHelper.AmountPercent).Value) * orderSubTotal) / 100;
 
                                 if (IsBundleProduct(product))
                                 {
@@ -419,9 +429,9 @@ namespace ToErp.APP.Integrations.OdooErp
                                 }
 
                                 bundleLine.Add(CreateOrderLine(product.Id,
-                                        product.GetField("name").Value,
-                                        price, Convert.ToInt32(mrpBomLineId.GetField("product_qty").Value),
-                                        product.GetField("taxes_id").Value));
+                                        product.GetField(OdooFieldHelper.Name).Value,
+                                        price, Convert.ToInt32(mrpBomLineId.GetField(OdooFieldHelper.ProductQty).Value),
+                                        product.GetField(OdooFieldHelper.TaxesId).Value));
                             }
 
                         }
@@ -438,7 +448,7 @@ namespace ToErp.APP.Integrations.OdooErp
             {
                 int bomCount = 0;
 
-                var wasParsed = int.TryParse(product.GetField("bom_count").Value.ToString(), out bomCount);
+                var wasParsed = int.TryParse(product.GetField(OdooFieldHelper.BomCount).Value.ToString(), out bomCount);
 
                 if (wasParsed)
                 {
@@ -453,26 +463,26 @@ namespace ToErp.APP.Integrations.OdooErp
         }
         private IEnumerable<RpcRecord> GetMrpBom()
         {
-            var mrpBom = new RpcContext(_rpcConnection, "mrp.bom");
+            var mrpBom = new RpcContext(_rpcConnection, OdooFieldHelper.MrpBom);
 
             mrpBom
-                .AddField("id")
-                .AddField("product_qty")
-                .AddField("product_tmpl_id");
+                .AddField(OdooFieldHelper.Id)
+                .AddField(OdooFieldHelper.ProductQty)
+                .AddField(OdooFieldHelper.ProductTmplId);
 
             return mrpBom.Execute(true, limit: 100);
         }
         private IEnumerable<RpcRecord> GetMrpBomLine()
         {
-            var mrpBomLine = new RpcContext(_rpcConnection, "mrp.bom.line");
+            var mrpBomLine = new RpcContext(_rpcConnection, OdooFieldHelper.MrpBomLine);
 
             mrpBomLine
-                .AddField("id")
-                .AddField("product_qty")
-                .AddField("product_tmpl_id")
-                .AddField("bom_id")
-                .AddField("product_id")
-                .AddField("amount_percent");
+                .AddField(OdooFieldHelper.Id)
+                .AddField(OdooFieldHelper.ProductQty)
+                .AddField(OdooFieldHelper.ProductTmplId)
+                .AddField(OdooFieldHelper.BomId)
+                .AddField(OdooFieldHelper.ProductId)
+                .AddField(OdooFieldHelper.AmountPercent);
 
             return mrpBomLine.Execute(true, limit: 100);
         }
@@ -502,11 +512,18 @@ namespace ToErp.APP.Integrations.OdooErp
             {
                 return default(int);
             }
-            var rpcContext = new RpcContext(_rpcConnection, "account.tax.office"); rpcContext.RpcFilter
-                .Equal("code", invoiceNumber);
-            rpcContext.AddField("id");
+            var rpcContext = new RpcContext(_rpcConnection, OdooFieldHelper.AccountTaxOffice);
+
+            rpcContext.RpcFilter
+                .Equal(OdooFieldHelper.Code, invoiceNumber);
+
+
+            rpcContext.AddField(OdooFieldHelper.Id);
+
             var data = rpcContext.Execute(limit: 1);
+
             var vergiDairesi = data.FirstOrDefault().Id;
+
             return vergiDairesi;
 
         }
