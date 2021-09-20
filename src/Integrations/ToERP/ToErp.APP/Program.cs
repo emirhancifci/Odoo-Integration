@@ -72,7 +72,8 @@ namespace ToErp.APP
                     ConnectionRetryCount = 5,
                     EventNameSuffix = "IntegrationEvent",
                     SubscriberClientAppName = "ToErp.APP",
-                    EventBusType = EventBusType.RabbitMQ
+                    EventBusType = EventBusType.RabbitMQ,
+                    EventBusConnectionString = Configuration.GetSection("RabbitMQConnectionString")?.Value
                 };
                 return EventBusFactory.Create(config, sp);
             });
