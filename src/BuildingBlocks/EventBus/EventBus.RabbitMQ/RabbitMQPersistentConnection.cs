@@ -21,12 +21,14 @@ namespace EventBus.RabbitMQ
         private object _lock = new();
         private bool _disposed;
         private ILogger _logger;
+        private string _connectionString;
 
         #endregion
 
         #region ctor
-        public RabbitMQPersistentConnection(IConnectionFactory connectionFactory, ILogger logger,int retryCount = 5)
+        public RabbitMQPersistentConnection(IConnectionFactory connectionFactory, ILogger logger, string connectionString, int retryCount = 5)
         {
+            _connectionString = connectionString;
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _retryCount = retryCount;
             _logger = logger;
@@ -56,7 +58,7 @@ namespace EventBus.RabbitMQ
                        });
                 policy.Execute(() =>
                 {
-                    _connection = _connectionFactory.CreateConnection();
+                    _connection = _connectionFactory.CreateConnection(_connectionString);
                 });
 
                 if (IsConnected)
