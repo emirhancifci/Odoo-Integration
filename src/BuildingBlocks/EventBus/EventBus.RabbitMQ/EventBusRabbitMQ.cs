@@ -36,7 +36,7 @@ namespace EventBus.RabbitMQ
             else
                 _connectionFactory = new ConnectionFactory();
 
-            _persistentConnection = new RabbitMQPersistentConnection(_connectionFactory, _logger, EventBusConfig.ConnectionRetryCount);
+            _persistentConnection = new RabbitMQPersistentConnection(_connectionFactory, _logger, eventBusConfig.EventBusConnectionString,EventBusConfig.ConnectionRetryCount);
 
             _consumerChannel = CreateConsumerChannel();
 
