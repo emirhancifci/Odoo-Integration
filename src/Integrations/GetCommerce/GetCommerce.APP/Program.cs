@@ -43,20 +43,14 @@ namespace GetCommerce.APP
 
             var sp = services.BuildServiceProvider();
 
-            //Initialize();
+            Initialize();
 
             _eventBus = sp.GetRequiredService<IEventBus>();
             _commerceIntegration = sp.GetRequiredService<ICommerceIntegration>();
 
             _eventBus.Subcribe<ChangeOrderStatusIntegrationEvent, ChangeOrderStatusIntegrationEventHandler>();
 
-            //StartJobs();
-            // ProcessNewOrder();
-
-            //  ProcessSentOrders();
-              ProcessCancelledOrders();
-           // ProcessCompletedOrders();
-          //  using var server = new BackgroundJobServer();
+            StartJobs();
 
             Console.CancelKeyPress += new ConsoleCancelEventHandler(OnExit);
 
@@ -137,9 +131,25 @@ namespace GetCommerce.APP
             Console.WriteLine("GetNewOrders Job Triggered. Triggered Time : " + DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"));
 
             RecurringJob.AddOrUpdate(
-               "FetchOrders",
+               "ProcessNewOrder",
                () => ProcessNewOrder(),
                Configuration.GetSection("HangfireCronExpression").Value);
+
+            RecurringJob.AddOrUpdate(
+              "ProcessSentOrders",
+              () => ProcessSentOrders(),
+              Configuration.GetSection("HangfireCronExpression").Value);
+
+            RecurringJob.AddOrUpdate(
+              "ProcessCompletedOrders",
+              () => ProcessCompletedOrders(),
+              Configuration.GetSection("HangfireCronExpression").Value);
+
+            RecurringJob.AddOrUpdate(
+              "ProcessCancelledOrders",
+              () => ProcessCancelledOrders(),
+              Configuration.GetSection("HangfireCronExpression").Value);
+
         }
         private static void Initialize()
         {

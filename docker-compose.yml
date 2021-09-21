@@ -1,0 +1,49 @@
+version: '3.4'
+
+services:
+  get_commerce:
+    image: mobitek/get_commerce
+    #build: .
+    container_name: publisherapi
+    restart: always
+    depends_on:
+      - rabbitmq
+      - mongo
+    ports:
+      - "3800:80"
+   external_links:
+      - mongo:database
+
+  to_erp:
+   image: mobitek/to_erp
+   restart: always
+   container_name: to_erp
+   depends_on:
+     -  rabbitmq
+
+  rabbitmq: # login guest:guest
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: "rabbitmq"
+    ports:
+      - "4369:4369"
+      - "5671:5671"
+      - "5672:5672"
+      - "25672:25672"
+      - "15671:15671"
+      - "15672:15672"
+  
+  mongo:
+    image: mongo
+    restart: always
+    container_name: mongo
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: example
+    volume:
+      - /my/custom:/etc/mongo
+
+networks:
+    default:
+        external:
+            name: erp_integration
